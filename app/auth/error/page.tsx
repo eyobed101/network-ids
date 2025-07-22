@@ -1,27 +1,27 @@
 // app/auth/error/page.tsx
 'use client'
 
-import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState, Suspense } from 'react';
+import { useRouter } from 'next/navigation';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ExclamationTriangleIcon } from '@radix-ui/react-icons';
 
-export default function AuthErrorPage() {
+function ErrorContent() {
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const error = searchParams.get('error');
-  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    setIsClient(true);
-    
-    // Client-side only operations
-    if (error && typeof window !== 'undefined') {
-      // Clear the error from the URL
+    // Client-side only parsing of search params
+    const params = new URLSearchParams(window.location.search);
+    const errorParam = params.get('error');
+    setError(errorParam);
+
+    // Clear the error from the URL
+    if (errorParam) {
       const cleanUrl = window.location.pathname;
       window.history.replaceState(null, '', cleanUrl);
     }
-  }, [error]);
+  }, []);
 
   const errorMessages: Record<string, string> = {
     Configuration: 'There was a server configuration error',
@@ -29,21 +29,6 @@ export default function AuthErrorPage() {
     Verification: 'The token has expired or is invalid',
     Default: 'An unexpected error occurred',
   };
-
-  if (!isClient) {
-    // Return minimal content during SSR
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Alert className="w-[400px]">
-          <ExclamationTriangleIcon className="h-4 w-4" />
-          <AlertTitle>Authentication Error</AlertTitle>
-          <AlertDescription>
-            Loading error details...
-          </AlertDescription>
-        </Alert>
-      </div>
-    );
-  }
 
   return (
     <div className="flex items-center justify-center min-h-screen">
@@ -61,5 +46,20 @@ export default function AuthErrorPage() {
         </button>
       </Alert>
     </div>
+  );
+}
+
+export default function AuthErrorPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-screen">
+        <Alert className="w-[400px]">
+          <ExclamationTriangleIcon className="h-4 w-4" />
+          <AlertTitle>Loading...</AlertTitle>
+        </Alert>
+      </div>
+    }>
+      <ErrorContent />
+    </Suspense>
   );
 }
