@@ -1,19 +1,23 @@
 // app/auth/error/page.tsx
 'use client'
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ExclamationTriangleIcon } from '@radix-ui/react-icons';
 
 export default function AuthErrorPage() {
   const router = useRouter();
-  const searchParams = new URLSearchParams(window.location.search);
+  const searchParams = useSearchParams();
   const error = searchParams.get('error');
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    // Clear the error from the URL
-    if (error) {
+    setIsClient(true);
+    
+    // Client-side only operations
+    if (error && typeof window !== 'undefined') {
+      // Clear the error from the URL
       const cleanUrl = window.location.pathname;
       window.history.replaceState(null, '', cleanUrl);
     }
@@ -25,6 +29,21 @@ export default function AuthErrorPage() {
     Verification: 'The token has expired or is invalid',
     Default: 'An unexpected error occurred',
   };
+
+  if (!isClient) {
+    // Return minimal content during SSR
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Alert className="w-[400px]">
+          <ExclamationTriangleIcon className="h-4 w-4" />
+          <AlertTitle>Authentication Error</AlertTitle>
+          <AlertDescription>
+            Loading error details...
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen">
