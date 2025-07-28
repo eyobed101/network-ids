@@ -1,5 +1,4 @@
 "use client";
-export const dynamic = 'force-dynamic'
 import Link from "next/link";
 import React, { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -17,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
 import { signIn } from "next-auth/react";
+import { Suspense } from "react";
 
 
 
@@ -26,7 +26,7 @@ export default function LoginPage() {
     email: "",
     password: "",
   });
-  const searchParams = useSearchParams();
+  // const searchParams = useSearchParams();
 
   const [loading, setLoading] = useState(false);
 
@@ -34,14 +34,14 @@ export default function LoginPage() {
   try {
     setLoading(true);
 
-    const callbackUrl = searchParams?.get('callbackUrl') || '/';
+    // const callbackUrl = searchParams?.get('callbackUrl') || '/';
 
 
     const res = await signIn("credentials", {
       redirect: false, // Prevent automatic redirects
       email: user.email,
       password: user.password,
-      callbackUrl // Update to your dashboard URL
+      // callbackUrl // Update to your dashboard URL
 
     });
 
